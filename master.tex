@@ -1,0 +1,203 @@
+\documentclass[
+% papersize
+a4paper,
+%fond size
+%12pt,
+11pt,
+%page print style
+twoside,
+%oneside,
+openright]{book}
+
+%for PSTRicks
+\usepackage[pdf]{pstricks}
+\usepackage[off]{auto-pst-pdf}
+
+%graphics included tikz & pfg
+\usepackage{graphicx}
+\usepackage{epsfig,epic,eepic}
+\usepackage{psfrag}
+\usepackage[USenglish,german]{babel}
+\usepackage{color,pstricks}
+% To allow me to use letters with accent
+\usepackage[latin1]{inputenc}
+
+% Fonts
+%\usepackage{lmodern}
+%from Ruben \usepackage[T1]{fontenc}
+\usepackage{times}
+%\usepackage[scaled]{helvet}
+%\usepackage[sc]{mathpazo} % math fonts for Palatino, see
+                          % http://www.tug.dk/FontCatalogue/palatino/
+%\usepackage{palatino}
+
+% Math packages
+\usepackage{amsmath,amssymb,amsfonts,amsthm}
+\usepackage{url}
+\usepackage[ruled,noline]{algorithm2e}
+% More compact lists
+\usepackage{paralist}
+% Fullpage
+\usepackage[in,headings]{fullpage}
+% But then adapt spacing
+\usepackage{setspace}
+\setstretch{1.3}
+
+%for nice tables
+\usepackage{multirow}
+%\usepackage{booktabs}
+\usepackage{ctable}
+
+%for nice item lists
+\usepackage{paralist}
+
+%usepackage comment for block comments
+\usepackage{comment}
+
+%nice symbols to draw arrow (yes) and -(no)
+\usepackage{pifont}
+\newcommand{\yes}{\checkmark}
+\newcommand{\no}{\textendash}
+
+%sub-picture numbering
+%\usepackage{subcaption}
+\usepackage{subfigure}
+
+\usepackage[right]{eurosym}
+
+
+%annotate TODO stuff
+\usepackage[colorinlistoftodos, textwidth=4cm, shadow]{todonotes}
+\usepackage{lscape}
+
+%pseudocode package
+\usepackage{pseudocode}
+
+%to insert some clickable links
+\usepackage{hyperref}
+\definecolor{darkblue}{rgb}{0,0,.5}
+\definecolor{black}{rgb}{0,0,0}
+\hypersetup{colorlinks=true, breaklinks=true, citecolor=black, linkcolor=black, menucolor=black, urlcolor=black}
+
+% \setlength{\oddsidemargin}{-0.3cm}
+% \setlength{\evensidemargin}{-0.3cm}
+% \setlength{\textwidth}{16cm}
+% \setlength{\topmargin}{-0.8cm}
+% \setlength{\textheight}{23.0cm}
+
+% use some common definitions
+\newcommand{\pref}[1]{Part~\ref{#1}}
+\newcommand{\cref}[1]{Chapter~\ref{#1}}
+\newcommand{\sref}[1]{Section~\ref{#1}}
+\newcommand{\aref}[1]{Appendix~\ref{#1}}
+\newcommand{\fref}[1]{Figure~\ref{#1}}
+\newcommand{\tref}[1]{Table~\ref{#1}}
+\newcommand{\eref}[1]{(\ref{#1})}
+
+% More convenient sometimes
+\newcommand{\ie}{i.\@e.\@ }
+\newcommand{\eg}{e.\@g.\@ }
+
+\newcommand{\us}{\,$\mu$s\xspace}
+
+%add empty page macro
+\newcommand{\blankpage}{
+\newpage
+\thispagestyle{empty}
+\mbox{}
+\newpage
+}
+
+% Some math definitions
+\input{mathdef}
+
+% Style headings + headers and footers
+\input{style}
+
+% Removing master, slows down the compilation
+\includeonly{
+	title,
+	abstract,
+	abstract_de,
+	acknowledgments,
+	paper-collaborators,
+	eid,
+	chapter-1_introduction,
+	chapter-2_related_work,
+	chapter-3_testbed,
+	chapter-4_measurement_tools,
+	chapter-5_algorithm,
+	chapter-6_conclusion,
+%	appendix,
+}
+
+
+% BEGINN of COCUMENT
+\begin{document}
+
+\setlength{\headheight}{13.6pt}
+
+%TITLE PAGE
+\pagestyle{empty}
+\include{title}
+
+\selectlanguage{USenglish}
+
+%ABSTRACT_EN
+\frontmatter \pagestyle{plain}
+\setcounter{page}{1}
+\include{abstract}
+
+%ABSTRACT_DE
+\begin{otherlanguage*}{german}
+  \include{abstract_de}
+\end{otherlanguage*}
+
+%ACKNOWLAGEMENTS
+\include{acknowledgments}
+
+%PUBLICATIONS & COLLABORATORS
+\include{paper-collaborators}
+
+%EIDESSTATTLICHE ERKLAERUNG
+\include{eid}
+
+%INSERT EMPTY PAGE
+\blankpage
+
+%TOC PAGE
+\tableofcontents
+
+%MAIN CONTENT
+\mainmatter \pagestyle{fancy}
+%\pagestyle{headings}
+\include{chapter-1_introduction}
+\include{chapter-2_related_work}
+\include{chapter-3_testbed}
+\include{chapter-4_measurement_tools}
+\include{chapter-5_algorithm}
+\include{chapter-6_conclusion}
+
+%BIBLIOGRAPHY
+\addcontentsline{toc}{chapter}{Bibliography}
+\bibliographystyle{IEEEtran}
+\fancyhead[RE]{\normalfont Bibliography}
+\fancyhead[LO]{\normalfont Bibliography}
+\bibliography{bibliography/IEEEabrv,bibliography/example}
+
+%ABBILDUNGSVERZEICHNIS
+\addcontentsline{toc}{chapter}{List of Figures}
+\listoffigures
+
+%TABELLENVERZEICHNIS
+\addcontentsline{toc}{chapter}{List of Tables}
+\listoftables
+
+%APPENDIX
+%\appendix
+%\include{appendix}
+
+\backmatter
+%\include{cv}
+
+\end{document}

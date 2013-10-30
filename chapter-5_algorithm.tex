@@ -1,0 +1,196 @@
+\chapter{Development of an Algorithm}
+\label{chap:controller}
+
+In this chapter, we present the design of our controller, describe  our implementation, and discuss our validation and performance evaluation results.
+%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%   SECTION   %%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Design and Implementation of a Control Interface}
+\label{sec:controller:design}
+
+In this section, we first give an overview of Linux framework, and next, describe the extensions we have implemented.
+%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%   SUB-SECTION   %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Linux framework}
+
+In the next subsection, we describe the necessary restructuring of Linux framework to extend annotations to realize our controller.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%   SUB-SECTION   %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Design Properties and Functionality}
+\label{sec:controller:functions}
+
+The algorithm operates in ine part: The pseudocode depicted in Fig.~\ref{fig:blues}) shows its operation.
+
+%\newpage
+%%%%%%%%%%%% PSYDOCODE of BLUES
+\begin{figure}
+ \begin{pseudocode}[ruled]{Blues}{ }
+\GLOBAL{min\_update, min\_P, max\_P,\Delta_{inc},\Delta_{dec},\Delta,\delta_{inc},\delta_{dec}, \delta_{emergency}}\\
+ \PROCEDURE{init}{ }
+     \forall R:\\
+        ref\_pwr[R], P\_data[R], P\_ack  \GETS max\_P; P\_sample[R] \GETS P\_ref[R]-\Delta\\
+        \CALL{Init\_Stats}{}
+\ENDPROCEDURE
+\PROCEDURE{collect\_stats}{tx\textrm{-}feedback}
+	%\COMMENT{For each rate R in the mrr retry chain}\\
+	\FOREACH R \in tx\textrm{-}feedback.retry\_chain \DO\\
+	\BEGIN
+		%IF\ tx\textrm{-}feedback.got\_ACK(R) == true
+		%\THEN
+		%	success \GETS 1
+		%\ELSE
+		%	success \GETS 0\\
+		success  \GETS tx\textrm{-}feedback.got\_ACK(R) == true\\
+		\IF tx\textrm{-}feedback.power == ref\_power[R]
+		\THEN
+		%\BEGIN
+			attempt\_ref[R]++; success\_ref[R]+=success;
+		%\END
+		\ELSEIF tx\textrm{-}feedback.power == data\_power[R]
+		\THEN
+		%\BEGIN
+			attempt\_data[R]++; success\_data[R]+=success;
+		%\END
+		\ELSEIF tx\textrm{-}feedback\_power == sample\_power[R]
+		\THEN
+		%\BEGIN
+			attempt\_sample[R]++; success\_sample[R]+=success;\\
+		%\END\\
+		\COMMENT{After sufficient samples, update Blues statistics}\\
+		\IF attempts[sample\_pwr[R]] > update\_thresh \AND attempt\_ref[R] > update\_thresh	
+		\THEN
+			\CALL{Blues\_Update\_Stats}{R}\\
+		\IF attempts[data\_pwr[R]] > update\_thresh
+		\THEN
+			\CALL{EWMA}{\alpha,p_{success}^{sample}[R], \frac{success\_sample[R]}{attempt\_sample[R]}}\\
+	\END\\
+	%\COMMENT{Sort all rates according to current throughput}\\
+	sorted\_rate\_list \GETS \CALL{Sort\_by\_Throughput}{full\_rate\_set}\\
+	sampling\_rate\_set \GETS subset[sorted\_rate\_set]		   
+\ENDPROCEDURE
+
+\PROCEDURE{Blues\_Update\_Stats}{R}
+		\CALL{EWMA}{\alpha,p_{success}^{ref}[R], success\_ref[R/attempt\_ref[R]}\\
+		\CALL{EWMA}{\alpha,p_{success}^{data}[R], success\_data[R]/attempt\_data[R]}\\
+		\CALL{EWMA}{\alpha,p_{success}^{sample}[R], success\_sample[R]/attempt\_sample[R]}\\
+
+		\COMMENT{If throughput collapse, reset to initial settings}\\
+		\IF p_{success}^{data}[R] < \delta_{emergency} \OR
+		current\_Thr[R] == 0
+		\THEN
+		%\BEGIN
+			\CALL{Init}{}\\
+			%\CALL{Reset\_Statistic}{R}\\
+		%\END\\
+		%
+		\COMMENT{(1) Update  $sample\_power$,  $ref\_power$ and $data\_power$}\\
+		\CALL{inc\_power}{P\_sample[R], p_{success}^{sample}[R], p_{success}^{ref}[R]}\\
+		\CALL{dec\_power}{P\_sample[R], p_{success}^{data}[R], p_{success}^{ref}[R]}\\
+		%
+		%\COMMENT{(2) Update $ref\_power$}\\
+		\CALL{inc\_power}{P\_ref[R], p_{success}^{ref}[R], 1}\\
+		\CALL{dec\_power}{P\_ref[R], p_{success}^{ref}[R], 1}\\
+		%
+		%\COMMENT{(3) Update $data\_power$}\\
+		P\_data[R] = P\_sample[R] +  \Delta
+\ENDPROCEDURE
+ \end{pseudocode}
+\caption{Blues control algorithm}
+\label{fig:blues}
+\end{figure}
+
+
+
+%%%%%%% Table of weighting  examples
+\begin{landscape}
+\ctable[
+	cap	= Impact of different weight factors $w$ on the joint power and rate decision,
+	caption = Impact of different weighting factors $w$ to the joint power and rate decision,
+	label	= tab:weighting_fators,
+	pos  	= t
+]{lccccccccc}{
+%
+\tnote[1]{Throughput: Minstrel periodically estimates the achievable throughput per data rate based on measured success probabilities.}
+\tnote[2]{Maximum utility at a given weighting factor $w$ is shown in bold.}
+%
+} {
+	\FL
+	%
+	\multirow{2}{*}{\textbf{Data}}	& \multirow{2}{*}{\textbf{Thr.\tmark[1]}}	& \multirow{2}{*}{\textbf{Power}}	& \multirow{2}{*}{\textbf{Power}} & \multirow{2}{*}{\textbf{Benefit}} & \multirow{2}{*}{\textbf{Cost}}	& \multicolumn{4}{c}{\textbf{Utility}}	\NN
+	%
+	\textbf{Rate} &[MBit\/s] &[dBm] &[mW] &[\%] &[\%] & \textit{\small{$w=1$}}	&	\textit{\small{$w=2$}}	&	\textit{\small{$w=4$}}	&	\textit{\small{$w=10$}}	\NN
+	%
+	\cmidrule(rl){1-1}\cmidrule(rl){2-2}\cmidrule(rl){3-3}\cmidrule(l){4-4}\cmidrule(rl){5-5}\cmidrule(l){6-6}\cmidrule(l){7-10}
+	%
+	6	&	6.0		&	1	&	1.3		&	39.2	&	20.3	&	19.0			&29.1			&	34.1			&	37.2	\NN
+	9	&	8.8		&	1	&	1.3		&	57.5	&	13.8	&	43.7			&50.6			&	54.1			&	55.1	\NN
+	12	&	11.7	&	1	&	1.3		&	76.5	&	10.4	&	\textbf{66.1}\tmark[2]	&\textbf{71.3}\tmark[2]	&	73.9			&	75.4	\NN
+	18	&	15.3	&	12	&	15.9	&	100.0	&	100.0	&	0.0				&50.0			&	\textbf{75.0}\tmark[2]	&	\textbf{90.0}\tmark[2]	\NN
+	24	&	4.7		&	19	&	79.4	&	30.7	&	1631.5	&	-1600.0			&-758.0			&	-377.2			&	-132.4	\NN
+	36	&	2.1		&	19	&	79.4	&	13.7	&	3651.5	&	-3600.0			&-1812.0		&	-899.2			&	-351.4	\NN
+	48	&	0.0		&	19	&	79.4	&	0.0		&	0.0		&	0.0				&0.0			&	0.0				&	0.0		\NN
+	54	&	0.0		&	19	&	79.4	&	0.0		&	0.0		&	0.0				&0.0			&	0.0				&	0.0		\LL
+}
+
+Table~\ref{tab:weighting_fators} provides a detailed example of benefit, cost, and utility calculations.
+\end{landscape}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%   SECTION   %%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Performance Evaluation}
+\label{sec:controller:evaluation}
+
+
+In this section, we describe the performance in different scenarios, ranging from single link to two or more links that operate in parallel.
+%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%   SECTION   %%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Summary}
+\label{sec:controller:conclusion}
+
+In this chapter, we presented the design, implementation, and performance evaluation of our controller. 
+%
+In the first part, we explained our modifications to the Linux subsystem .
+%
+Building upon this, we described our heuristic approach to minimize control decisions.
+%
+
+%
+The design and implementation of our controller within the Linux kernel shows good performance.
+%
+
+In our performance evaluation in the testbed we showed that our controller performs well.
+%
+Our measurements cover three different szenarios.
+
+%%%
+\paragraph{Limitations:}
+
+In this chapter, we analyzed our controller with its ability gain performance.
+%
+Our current experimentation setup does not cover mixed traffic, different packet sizes, or multiple packet flows and distributions.
+%
+Therefore, additional measurements would be necessary to explore the effects of realistic user traffic.
+%

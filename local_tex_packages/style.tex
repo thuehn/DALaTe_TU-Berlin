@@ -1,0 +1,57 @@
+
+% Modify header and footers
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\chaptermark}[1]{
+  \markboth{\thechapter.\ #1}{}
+%  \markboth{#1}{}
+}
+\renewcommand{\sectionmark}[1]{
+%  \markboth{\thechapter.\ #1}{}
+  \markright{#1}
+}
+
+% \fancyhead[LE]{\normalfont\sffamily\thepage}
+% \fancyhead[RE]{\normalfont\sffamily\leftmark}
+% \fancyhead[LO]{\normalfont\sffamily\rightmark}
+% \fancyhead[RO]{\normalfont\sffamily\thepage}
+\fancyhead[LE]{\normalfont\thepage}
+\fancyhead[RE]{\normalfont\leftmark}
+\fancyhead[LO]{\normalfont\rightmark}
+\fancyhead[RO]{\normalfont\thepage}
+
+% Modify the fonts for the chapters, section, sub... and paragraphs
+\usepackage{titlesec}
+
+\titleformat{\chapter}[display]
+%{\normalfont\Huge\sffamily}
+{\normalfont\Huge}
+{\filleft{\textbf{\LARGE{\chaptername} {\thechapter}}}}{1em}{\filleft\textbf}
+
+\titleformat{\section}
+{\normalfont\Large}
+{\filright{\textbf{\thesection}}}{1em}{\filright\textbf}
+
+\titleformat{\subsection}
+{\normalfont\normalsize}
+{\filright{\textbf{\thesubsection}}}{1.3em}{\filright\textbf}
+
+\titleformat{\subsubsection}
+{\normalfont\normalsize}
+{}{0em}{\filright\textbf}
+
+\titleformat{\paragraph}[runin]
+{\normalfont\normalsize}
+{}{0em}{\filright\textbf}
+
+% Do it for theorems,... too
+%\theoremstyle{definition}
+%\newtheorem{define}{\textbf\normalfont\normalsize\sffamily{Definition}}[chapter]
+%\theoremstyle{plain}
+%\newtheorem{theorem}{\textbf\normalfont\normalsize\sffamily{Theorem}}[chapter]
+%\newtheorem{lem}{\textbf\normalfont\normalsize\sffamily{Lemma}}[chapter]
+
+
+% The larger it is, the less willing LaTeX is to split footnotes
+\interfootnotelinepenalty=10000
