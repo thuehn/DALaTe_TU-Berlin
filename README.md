@@ -1,4 +1,4 @@
-Latex Teplate for Thesis of all kinds at TU-Berlin 
+Latex template for all kind of theses at TU-Berlin 
 --------------------------------------------------
 
 ### [history]
