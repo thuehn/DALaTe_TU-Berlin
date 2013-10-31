@@ -1,9 +1,8 @@
-Latex Vorlage für eine Diplomarbeit an der TU-Berlin
-----------------------------------------------------
-( Latex Template for Master Thesis at TU-Berlin)
+Latex Teplate for Thesis of all kinds at TU-Berlin 
+--------------------------------------------------
 
 ### [history]
-* basierend auf dem Latex Makefile von [Chris Monson](http://www.bouncingchairs.net/oss) 2004 (shiblon@gmail.com)
+* based on Latex Makefile from [Chris Monson](http://www.bouncingchairs.net/oss) 2004 (shiblon@gmail.com)
 
 
 ### [usage]
