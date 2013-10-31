@@ -1,5 +1,6 @@
 Latex template for all kind of theses at TU-Berlin 
 --------------------------------------------------
+(**D**iplom **A**rbeits **La**tex **Te**mplate)
 
 ### [history]
 * based on Latex Makefile from [Chris Monson](http://www.bouncingchairs.net/oss) 2004 (shiblon@gmail.com)
